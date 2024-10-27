@@ -8,3 +8,6 @@ lightgbm~=4.5.0
 scikit-learn~=1.5.2
 xgboost~=2.1.2
 scikit-optimize~=0.10.2
+openpyxl~=0.10.2
+XlsxWriter
+openpyxl
