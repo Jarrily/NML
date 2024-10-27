@@ -1,5 +1,6 @@
 # NML
 *Predictive models for the malignancy of NML based on multiple machine learning methods*
+_Email：ljh18620847774@gmail.com_
 
 ### machine learning
 ##### 1. Random Forest
@@ -15,3 +16,5 @@
 ##### 11. CatBoost
 ##### 12. LightGBM
 ##### 13. Bayes
+
+
