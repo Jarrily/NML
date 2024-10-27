@@ -215,28 +215,8 @@ def ACCAUEDENGDENGTEST(y_truetest,y_protest,y_predtest,X_test,modelfusionall_wor
     plt.savefig('./DataStatistics/' + modelfusionall_words + '/' + modelfusionall_words + '_ROC' + mingshishenme + '.pdf', dpi=DPI, bbox_inches='tight')
     st.markdown("#### AUC：" + str(roc_aucTEST))
     st.pyplot(plt)
+    st.dataframe(dataTESTPONGJIAZHIBIAO)
 
-def quanzhognhuizhi(hebingQUANZHONG, modelfusionall_words):
-    hebingQUANZHONG.set_index("Features", inplace=True)
-    sorted_data = hebingQUANZHONG.sort_values(by="Coefficients", ascending=False)
-    quanzhongtugao = int(5 * tukuan / 6)
-    plt.figure(figsize=(tukuan, quanzhongtugao), dpi=DPI)
-    plt.bar(sorted_data.index, sorted_data["Coefficients"], color='#6699CC', width=0.5)
-    plt.rc('font', family='Arial')
-    plt.xticks(rotation=45, ha='right', va='top', fontsize=14)
-    plt.yticks(fontsize=14)
-    plt.xlabel('Features', size=20)
-    plt.ylabel('Features coefficients', size=20)
-    bwith = 2
-    ax = plt.gca()
-    ax.spines['bottom'].set_linewidth(bwith)
-    ax.spines['left'].set_linewidth(bwith)
-    ax.spines['top'].set_linewidth(bwith)
-    ax.spines['right'].set_linewidth(bwith)
-    plt.savefig('./DataStatistics/' + modelfusionall_words + '/' + modelfusionall_words + '_QZ.png', dpi=DPI,
-                bbox_inches='tight')
-    plt.savefig('./DataStatistics/' + modelfusionall_words + '/' + modelfusionall_words + '_QZ.pdf', dpi=DPI,
-                bbox_inches='tight')
 
 def moxinggoujianerfenlei(test_size,train_size):
     if modelfusionall_words == "Random Forest":
@@ -557,33 +537,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctrain = pd.DataFrame(reporttrain).transpose()
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test,moxing_train])
-            if mingshishenme != "test":
-                np.savetxt("./DataStatistics/Random Forest/RF_coefficient.csv", best_moxing_model.feature_importances_, delimiter=',')
-                coef1 = pd.read_csv(r"./DataStatistics/Random Forest/RF_coefficient.csv", header=None)
-                coef1_array = np.array(coef1.stack())
-                coef1_list = coef1_array.tolist()
-                df1 = pd.DataFrame(coef1_list)
-                feature2 = list(X_train.columns)
-                df2 = pd.DataFrame(feature2)
-                df2.to_csv("./DataStatistics/Random Forest/RF_coefficient.csv", index=False)
-                hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                quanzhognhuizhi(hebingQUANZHONG,modelfusionall_words)
-            with pd.ExcelWriter("./DataStatistics/Random Forest/RF_" + mingshishenme + "_Report.xlsx", engine='xlsxwriter') as writer:
-                hebingcccc.to_excel(writer, index=False, sheet_name="RF" + "_" + mingshishenme)
-                moxing_train.to_excel(writer, index=False, sheet_name="RF_train" + "_" + mingshishenme)
-                moxing_test.to_excel(writer, index=False, sheet_name="RF_test" + "_" + mingshishenme)
-                if mingshishenme != "test":
-                    hebingQUANZHONG.to_excel(writer, index=True, sheet_name="RF_coefficient" + "_" + mingshishenme)
-                dataTRAINPONGJIAZHIBIAO.to_excel(writer,index=True, sheet_name="RF_ROCtrain" + "_" + mingshishenme + "_report_1")
-                dataTESTPONGJIAZHIBIAO.to_excel(writer,index=True, sheet_name="RF_ROCtest" + "_" + mingshishenme + "_report_1")
-                dfroctrain.to_excel(writer,index=True, sheet_name="RF_ROCtrain" + "_" + mingshishenme + "_report_2")
-                dfroctest.to_excel(writer,index=True, sheet_name="RF_ROCtest" + "_" + mingshishenme + "_report_2")
-            try:
-                os.remove("./DataStatistics/Random Forest/RF_coefficient.csv")
-            except:
-                print("no")
-
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -608,12 +561,8 @@ def moxinggoujianerfenlei(test_size,train_size):
                 elif  chaocanshumoxing == "Bayesian optimization":
                     best_model = BayesSearchCV(bestmodel,params,n_iter=twoniters,cv=allcv,n_jobs=-1,random_state = tworandomstate,verbose=allverbose)
                 best_model.fit(X_train, y_train)
-                best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
-                joblib.dump(best_model, './DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'.pkl')
             else:
                 best_model = DecisionTreeClassifier(**shenmebestmodel, random_state=moxingderandomstate)
                 best_model.fit(X_train, y_train)
@@ -627,37 +576,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             st.markdown("#### "+mingshishenme+"Here are the results:")
             ACCAUEDENGDENGtrain(y_truetrain,y_protrain,y_predtrain,X_train,mingshishenme)
             ACCAUEDENGDENGTEST(y_truetest, y_protest, y_predtest, X_test, modelfusionall_words,mingshishenme)
-            reporttrain = classification_report(y_truetrain, y_predtrain, output_dict=True)
-            reporttest = classification_report(y_truetest, y_predtest, output_dict=True)
-            dfroctrain = pd.DataFrame(reporttrain).transpose()
-            dfroctest = pd.DataFrame(reporttest).transpose()
-            hebingcccc = pd.concat([moxing_test,moxing_train])
-            if mingshishenme != "test":
-                np.savetxt("./DataStatistics/Decision Tree/DT_coefficient.csv", best_moxing_model.feature_importances_, delimiter=',')
-                coef1 = pd.read_csv(r"./DataStatistics/Decision Tree/DT_coefficient.csv", header=None)
-                coef1_array = np.array(coef1.stack())
-                coef1_list = coef1_array.tolist()
-                df1 = pd.DataFrame(coef1_list)
-                feature2 = list(X_train.columns)
-                df2 = pd.DataFrame(feature2)
-                df2.to_csv("./DataStatistics/Decision Tree/DT_coefficient.csv", index=False)
-                hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                quanzhognhuizhi(hebingQUANZHONG,modelfusionall_words)
-            with pd.ExcelWriter("./DataStatistics/Decision Tree/DT_" + mingshishenme + "_Report.xlsx", engine='xlsxwriter') as writer:
-                hebingcccc.to_excel(writer, index=False, sheet_name="DT" + "_" + mingshishenme)
-                moxing_train.to_excel(writer, index=False, sheet_name="DT_train" + "_" + mingshishenme)
-                moxing_test.to_excel(writer, index=False, sheet_name="DT_test" + "_" + mingshishenme)
-                if mingshishenme != "test":
-                    hebingQUANZHONG.to_excel(writer, index=True, sheet_name="DT_coefficient" + "_" + mingshishenme)
-                dataTRAINPONGJIAZHIBIAO.to_excel(writer,index=True, sheet_name="DT_ROCtrain" + "_" + mingshishenme + "_report_1")
-                dataTESTPONGJIAZHIBIAO.to_excel(writer,index=True, sheet_name="DT_ROCtest" + "_" + mingshishenme + "_report_1")
-                dfroctrain.to_excel(writer,index=True, sheet_name="DT_ROCtrain" + "_" + mingshishenme + "_report_2")
-                dfroctest.to_excel(writer,index=True, sheet_name="DT_ROCtest" + "_" + mingshishenme + "_report_2")
-            try:
-                os.remove("./DataStatistics/Decision Tree/DT_coefficient.csv")
-            except:
-                print("no")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -685,9 +603,6 @@ def moxinggoujianerfenlei(test_size,train_size):
                 best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                joblib.dump(best_model, './DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'.pkl')
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
             else:
                 best_model = ExtraTreesClassifier(**shenmebestmodel,random_state=moxingderandomstate)
                 best_model.fit(X_train, y_train)
@@ -706,32 +621,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctrain = pd.DataFrame(reporttrain).transpose()
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test,moxing_train])
-            if mingshishenme != "test":
-                np.savetxt("./DataStatistics/Extra Trees/ET_coefficient.csv", best_moxing_model.feature_importances_, delimiter=',')
-                coef1 = pd.read_csv(r"./DataStatistics/Extra Trees/ET_coefficient.csv", header=None)
-                coef1_array = np.array(coef1.stack())
-                coef1_list = coef1_array.tolist()
-                df1 = pd.DataFrame(coef1_list)
-                feature2 = list(X_train.columns)
-                df2 = pd.DataFrame(feature2)
-                df2.to_csv("./DataStatistics/Extra Trees/ET_coefficient.csv", index=False)
-                hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                quanzhognhuizhi(hebingQUANZHONG,modelfusionall_words)
-            with pd.ExcelWriter("./DataStatistics/Extra Trees/ET_" + mingshishenme + "_Report.xlsx", engine='xlsxwriter') as writer:
-                hebingcccc.to_excel(writer, index=False, sheet_name="ET" + "_" + mingshishenme)
-                moxing_train.to_excel(writer, index=False, sheet_name="ET_train" + "_" + mingshishenme)
-                moxing_test.to_excel(writer, index=False, sheet_name="ET_test" + "_" + mingshishenme)
-                if mingshishenme != "test":
-                    hebingQUANZHONG.to_excel(writer, index=True, sheet_name="ET_coefficient" + "_" + mingshishenme)
-                dataTRAINPONGJIAZHIBIAO.to_excel(writer,index=True, sheet_name="ET_ROCtrain" + "_" + mingshishenme + "_report_1")
-                dataTESTPONGJIAZHIBIAO.to_excel(writer,index=True, sheet_name="ET_ROCtest" + "_" + mingshishenme + "_report_1")
-                dfroctrain.to_excel(writer,index=True, sheet_name="ET_ROCtrain" + "_" + mingshishenme + "_report_2")
-                dfroctest.to_excel(writer,index=True, sheet_name="ET_ROCtest" + "_" + mingshishenme + "_report_2")
-            try:
-                os.remove("./DataStatistics/Extra Trees/ET_coefficient.csv")
-            except:
-                print("no")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -759,9 +648,6 @@ def moxinggoujianerfenlei(test_size,train_size):
                 best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                joblib.dump(best_model, './DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'.pkl')
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
             else:
                 best_model = svm.SVC(**shenmebestmodel)
                 best_model.fit(X_train, y_train)
@@ -780,51 +666,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctrain = pd.DataFrame(reporttrain).transpose()
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test,moxing_train])
-            if mingshishenme != "test":
-                if hasattr(best_moxing_model, 'coef_'):
-                    np.savetxt("./DataStatistics/SVM/SVM_coefficient.csv", best_moxing_model.coef_, delimiter=',')
-                    coef1 = pd.read_csv(r"./DataStatistics/SVM/SVM_coefficient.csv", header=None)
-                    coef1_array = np.array(coef1.stack())
-                    coef1_list = coef1_array.tolist()
-                    df1 = pd.DataFrame(coef1_list)
-                    feature2 = list(X_train.columns)
-                    df2 = pd.DataFrame(feature2)
-                    df2.to_csv("./DataStatistics/SVM/SVM_coefficient.csv", index=False)
-                    hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                    hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                    quanzhognhuizhi(hebingQUANZHONG,modelfusionall_words)
-                    with pd.ExcelWriter("./DataStatistics/SVM/SVM" + "_" + mingshishenme + "_Report.xlsx", engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="SVM" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="SVM_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="SVM_test" + "_" + mingshishenme)
-                        hebingQUANZHONG.to_excel(writer, index=True, sheet_name="SVM_coefficient" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer,index=True, sheet_name="SVM_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer,index=True, sheet_name="SVM_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer,index=True, sheet_name="SVM_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer,index=True, sheet_name="SVM_ROCtest" + "_" + mingshishenme + "_report_2")
-                    try:
-                        os.remove("./DataStatistics/SVM/SVM_coefficient.csv")
-                    except:
-                        print("no")
-                else:
-                    st.warning("The best models have no weight attributes!")
-                    with pd.ExcelWriter("./DataStatistics/SVM/SVM" + "_" + mingshishenme + "_Report.xlsx", engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="SVM" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="SVM_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="SVM_test" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer,index=True, sheet_name="SVM_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer,index=True, sheet_name="SVM_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer,index=True, sheet_name="SVM_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer,index=True, sheet_name="SVM_ROCtest" + "_" + mingshishenme + "_report_2")
-            else:
-                with pd.ExcelWriter("./DataStatistics/SVM/SVM" + "_" + mingshishenme + "_Report.xlsx",engine='xlsxwriter') as writer:
-                    hebingcccc.to_excel(writer, index=False, sheet_name="SVM" + "_" + mingshishenme)
-                    moxing_train.to_excel(writer, index=False, sheet_name="SVM_train" + "_" + mingshishenme)
-                    moxing_test.to_excel(writer, index=False, sheet_name="SVM_test" + "_" + mingshishenme)
-                    dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True,sheet_name="SVM_ROCtrain" + "_" + mingshishenme + "_report_1")
-                    dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True,sheet_name="SVM_ROCtest" + "_" + mingshishenme + "_report_1")
-                    dfroctrain.to_excel(writer, index=True,sheet_name="SVM_ROCtrain" + "_" + mingshishenme + "_report_2")
-                    dfroctest.to_excel(writer, index=True,sheet_name="SVM_ROCtest" + "_" + mingshishenme + "_report_2")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -852,10 +693,6 @@ def moxinggoujianerfenlei(test_size,train_size):
                 best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                joblib.dump(best_model, './DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'.pkl')
-                joblib.dump(best_model, './DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'.pkl')
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
             else:
                 best_model = LogisticRegression(**shenmebestmodel)
                 best_model.fit(X_train, y_train)
@@ -874,54 +711,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctrain = pd.DataFrame(reporttrain).transpose()
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test, moxing_train])
-            if mingshishenme != "test":
-                if hasattr(best_moxing_model, 'coef_'):
-                    np.savetxt("./DataStatistics/Logistic Regression/LR_coefficient.csv",
-                               best_moxing_model.coef_, delimiter=',')
-                    coef1 = pd.read_csv(r"./DataStatistics/Logistic Regression/LR_coefficient.csv", header=None)
-                    coef1_array = np.array(coef1.stack())
-                    coef1_list = coef1_array.tolist()
-                    df1 = pd.DataFrame(coef1_list)
-                    feature2 = list(X_train.columns)
-                    df2 = pd.DataFrame(feature2)
-                    df2.to_csv("./DataStatistics/Logistic Regression/LR_coefficient.csv", index=False)
-                    hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                    hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                    quanzhognhuizhi(hebingQUANZHONG, modelfusionall_words)
-                    with pd.ExcelWriter("./DataStatistics/Logistic Regression/LR" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="LR" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="LR_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="LR_test" + "_" + mingshishenme)
-                        hebingQUANZHONG.to_excel(writer, index=True, sheet_name="LR_coefficient" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="LR_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="LR_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="LR_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="LR_ROCtest" + "_" + mingshishenme + "_report_2")
-                    try:
-                        os.remove("./DataStatistics/Logistic Regression/LR_coefficient.csv")
-                    except:
-                        print("no")
-                else:
-                    st.warning("The best models have no weight attributes!")
-                    with pd.ExcelWriter("./DataStatistics/Logistic Regression/LR" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="LR" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="LR_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="LR_test" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="LR_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="LR_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="LR_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="LR_ROCtest" + "_" + mingshishenme + "_report_2")
-            else:
-                with pd.ExcelWriter("./DataStatistics/Logistic Regression/LR" + "_" + mingshishenme + "_Report.xlsx",engine='xlsxwriter') as writer:
-                    hebingcccc.to_excel(writer, index=False, sheet_name="LR" + "_" + mingshishenme)
-                    moxing_train.to_excel(writer, index=False, sheet_name="LR_train" + "_" + mingshishenme)
-                    moxing_test.to_excel(writer, index=False, sheet_name="LR_test" + "_" + mingshishenme)
-                    dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True,sheet_name="LR_ROCtrain" + "_" + mingshishenme + "_report_1")
-                    dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True,sheet_name="LR_ROCtest" + "_" + mingshishenme + "_report_1")
-                    dfroctrain.to_excel(writer, index=True,sheet_name="LR_ROCtrain" + "_" + mingshishenme + "_report_2")
-                    dfroctest.to_excel(writer, index=True,sheet_name="LR_ROCtest" + "_" + mingshishenme + "_report_2")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -949,10 +738,6 @@ def moxinggoujianerfenlei(test_size,train_size):
                 best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                joblib.dump(best_model,
-                            './DataStatistics/' + modelfusionall_words + '/' + modelfusionall_words + '.pkl')
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
             else:
                 best_model = SGDClassifier(**shenmebestmodel)
                 best_model.fit(X_train, y_train)
@@ -971,54 +756,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctrain = pd.DataFrame(reporttrain).transpose()
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test, moxing_train])
-            if mingshishenme != "test":
-                if hasattr(best_moxing_model, 'coef_'):
-                    np.savetxt("./DataStatistics/SGD/SGD_coefficient.csv",
-                               best_moxing_model.coef_, delimiter=',')
-                    coef1 = pd.read_csv(r"./DataStatistics/SGD/SGD_coefficient.csv", header=None)
-                    coef1_array = np.array(coef1.stack())
-                    coef1_list = coef1_array.tolist()
-                    df1 = pd.DataFrame(coef1_list)
-                    feature2 = list(X_train.columns)
-                    df2 = pd.DataFrame(feature2)
-                    df2.to_csv("./DataStatistics/SGD/SGD_coefficient.csv", index=False)
-                    hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                    hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                    quanzhognhuizhi(hebingQUANZHONG, modelfusionall_words)
-                    with pd.ExcelWriter("./DataStatistics/SGD/SGD" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="SGD" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="SGD_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="SGD_test" + "_" + mingshishenme)
-                        hebingQUANZHONG.to_excel(writer, index=True, sheet_name="SGD_coefficient" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="SGD_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="SGD_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="SGD_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="SGD_ROCtest" + "_" + mingshishenme + "_report_2")
-                    try:
-                        os.remove("./DataStatistics/SGD/SGD_coefficient.csv")
-                    except:
-                        print("no")
-                else:
-                    st.warning("The best models have no weight attributes!")
-                    with pd.ExcelWriter("./DataStatistics/SGD/SGD" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="SGD" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="SGD_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="SGD_test" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="SGD_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="SGD_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="SGD_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="SGD_ROCtest" + "_" + mingshishenme + "_report_2")
-            else:
-                with pd.ExcelWriter("./DataStatistics/SGD/SGD" + "_" + mingshishenme + "_Report.xlsx",engine='xlsxwriter') as writer:
-                    hebingcccc.to_excel(writer, index=False, sheet_name="SGD" + "_" + mingshishenme)
-                    moxing_train.to_excel(writer, index=False, sheet_name="SGD_train" + "_" + mingshishenme)
-                    moxing_test.to_excel(writer, index=False, sheet_name="SGD_test" + "_" + mingshishenme)
-                    dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True,sheet_name="SGD_ROCtrain" + "_" + mingshishenme + "_report_1")
-                    dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True,sheet_name="SGD_ROCtest" + "_" + mingshishenme + "_report_1")
-                    dfroctrain.to_excel(writer, index=True,sheet_name="SGD_ROCtrain" + "_" + mingshishenme + "_report_2")
-                    dfroctest.to_excel(writer, index=True,sheet_name="SGD_ROCtest" + "_" + mingshishenme + "_report_2")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -1045,10 +782,6 @@ def moxinggoujianerfenlei(test_size,train_size):
                 best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                joblib.dump(best_model,
-                            './DataStatistics/' + modelfusionall_words + '/' + modelfusionall_words + '.pkl')
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
             else:
                 best_model = KNeighborsClassifier(**shenmebestmodel)
                 best_model.fit(X_train, y_train)
@@ -1068,14 +801,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test, moxing_train])
             st.warning("The best models have no weight attributes!")
-            with pd.ExcelWriter("./DataStatistics/KNN/KNN" + "_" + mingshishenme + "_Report.xlsx",engine='xlsxwriter') as writer:
-                hebingcccc.to_excel(writer, index=False, sheet_name="KNN" + "_" + mingshishenme)
-                moxing_train.to_excel(writer, index=False, sheet_name="KNN_train" + "_" + mingshishenme)
-                moxing_test.to_excel(writer, index=False, sheet_name="KNN_test" + "_" + mingshishenme)
-                dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="KNN_ROCtrain" + "_" + mingshishenme + "_report_1")
-                dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="KNN_ROCtest" + "_" + mingshishenme + "_report_1")
-                dfroctrain.to_excel(writer, index=True, sheet_name="KNN_ROCtrain" + "_" + mingshishenme + "_report_2")
-                dfroctest.to_excel(writer, index=True, sheet_name="KNN_ROCtest" + "_" + mingshishenme + "_report_2")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -1102,10 +827,6 @@ def moxinggoujianerfenlei(test_size,train_size):
                 best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                joblib.dump(best_model,
-                            './DataStatistics/' + modelfusionall_words + '/' + modelfusionall_words + '.pkl')
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
             else:
                 best_model = XGBClassifier(**shenmebestmodel,random_state=moxingderandomstate)
                 best_model.fit(X_train, y_train)
@@ -1124,53 +845,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctrain = pd.DataFrame(reporttrain).transpose()
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test, moxing_train])
-            if mingshishenme != "test":
-                if hasattr(best_moxing_model, 'feature_importances_'):
-                    np.savetxt("./DataStatistics/XGBoost/XGB_coefficient.csv",
-                               best_moxing_model.feature_importances_, delimiter=',')
-                    coef1 = pd.read_csv(r"./DataStatistics/XGBoost/XGB_coefficient.csv", header=None)
-                    coef1_array = np.array(coef1.stack())
-                    coef1_list = coef1_array.tolist()
-                    df1 = pd.DataFrame(coef1_list)
-                    feature2 = list(X_train.columns)
-                    df2 = pd.DataFrame(feature2)
-                    df2.to_csv("./DataStatistics/XGBoost/XGB_coefficient.csv", index=False)
-                    hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                    hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                    quanzhognhuizhi(hebingQUANZHONG, modelfusionall_words)
-                    with pd.ExcelWriter("./DataStatistics/XGBoost/XGB" + "_" + mingshishenme + "_Report.xlsx",engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="XGB" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="XGB_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="XGB_test" + "_" + mingshishenme)
-                        hebingQUANZHONG.to_excel(writer, index=True, sheet_name="XGB_coefficient" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="XGB_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="XGB_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="XGB_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="XGB_ROCtest" + "_" + mingshishenme + "_report_2")
-                    try:
-                        os.remove("./DataStatistics/XGBoost/XGB_coefficient.csv")
-                    except:
-                        print("no")
-                else:
-                    st.warning("The best models have no weight attributes!")
-                    with pd.ExcelWriter("./DataStatistics/XGBoost/XGB" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="XGB" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="XGB_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="XGB_test" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="XGB_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="XGB_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="XGB_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="XGB_ROCtest" + "_" + mingshishenme + "_report_2")
-            else:
-                with pd.ExcelWriter("./DataStatistics/XGBoost/XGB" + "_" + mingshishenme + "_Report.xlsx",engine='xlsxwriter') as writer:
-                    hebingcccc.to_excel(writer, index=False, sheet_name="XGB" + "_" + mingshishenme)
-                    moxing_train.to_excel(writer, index=False, sheet_name="XGB_train" + "_" + mingshishenme)
-                    moxing_test.to_excel(writer, index=False, sheet_name="XGB_test" + "_" + mingshishenme)
-                    dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True,sheet_name="XGB_ROCtrain" + "_" + mingshishenme + "_report_1")
-                    dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True,sheet_name="XGB_ROCtest" + "_" + mingshishenme + "_report_1")
-                    dfroctrain.to_excel(writer, index=True,sheet_name="XGB_ROCtrain" + "_" + mingshishenme + "_report_2")
-                    dfroctest.to_excel(writer, index=True,sheet_name="XGB_ROCtest" + "_" + mingshishenme + "_report_2")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -1197,10 +871,6 @@ def moxinggoujianerfenlei(test_size,train_size):
                 best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                joblib.dump(best_model,
-                            './DataStatistics/' + modelfusionall_words + '/' + modelfusionall_words + '.pkl')
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
             else:
                 best_model = AdaBoostClassifier(**shenmebestmodel,random_state=moxingderandomstate)
                 best_model.fit(X_train, y_train)
@@ -1219,58 +889,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctrain = pd.DataFrame(reporttrain).transpose()
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test, moxing_train])
-            if mingshishenme != "test":
-                if hasattr(best_moxing_model, 'feature_importances_'):
-                    np.savetxt("./DataStatistics/Adaboost/ADA_coefficient.csv",
-                               best_moxing_model.feature_importances_, delimiter=',')
-                    coef1 = pd.read_csv(r"./DataStatistics/Adaboost/ADA_coefficient.csv", header=None)
-                    coef1_array = np.array(coef1.stack())
-                    coef1_list = coef1_array.tolist()
-                    df1 = pd.DataFrame(coef1_list)
-                    feature2 = list(X_train.columns)
-                    df2 = pd.DataFrame(feature2)
-                    df2.to_csv("./DataStatistics/Adaboost/ADA_coefficient.csv", index=False)
-                    hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                    hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                    quanzhognhuizhi(hebingQUANZHONG, modelfusionall_words)
-                    with pd.ExcelWriter("./DataStatistics/Adaboost/ADA" + "_" + mingshishenme + "_Report.xlsx",engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="ADA" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="ADA_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="ADA_test" + "_" + mingshishenme)
-                        hebingQUANZHONG.to_excel(writer, index=True, sheet_name="ADA_coefficient" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="ADA_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="ADA_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="ADA_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="ADA_ROCtest" + "_" + mingshishenme + "_report_2")
-                    try:
-                        os.remove("./DataStatistics/Adaboost/ADA_coefficient.csv")
-                    except:
-                        print("no")
-                else:
-                    st.warning("The best models have no weight attributes!")
-                    with pd.ExcelWriter("./DataStatistics/Adaboost/ADA" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="ADA" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="ADA_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="ADA_test" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="ADA_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="ADA_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="ADA_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="ADA_ROCtest" + "_" + mingshishenme + "_report_2")
-            else:
-                with pd.ExcelWriter("./DataStatistics/Adaboost/ADA" + "_" + mingshishenme + "_Report.xlsx",
-                                    engine='xlsxwriter') as writer:
-                    hebingcccc.to_excel(writer, index=False, sheet_name="ADA" + "_" + mingshishenme)
-                    moxing_train.to_excel(writer, index=False, sheet_name="ADA_train" + "_" + mingshishenme)
-                    moxing_test.to_excel(writer, index=False, sheet_name="ADA_test" + "_" + mingshishenme)
-                    dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                     sheet_name="ADA_ROCtrain" + "_" + mingshishenme + "_report_1")
-                    dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                    sheet_name="ADA_ROCtest" + "_" + mingshishenme + "_report_1")
-                    dfroctrain.to_excel(writer, index=True,
-                                        sheet_name="ADA_ROCtrain" + "_" + mingshishenme + "_report_2")
-                    dfroctest.to_excel(writer, index=True,
-                                       sheet_name="ADA_ROCtest" + "_" + mingshishenme + "_report_2")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -1297,10 +915,6 @@ def moxinggoujianerfenlei(test_size,train_size):
                 best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                joblib.dump(best_model,
-                            './DataStatistics/' + modelfusionall_words + '/' + modelfusionall_words + '.pkl')
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
             else:
                 best_model = GradientBoostingClassifier(**shenmebestmodel,random_state=moxingderandomstate)
                 best_model.fit(X_train, y_train)
@@ -1319,58 +933,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctrain = pd.DataFrame(reporttrain).transpose()
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test, moxing_train])
-            if mingshishenme != "test":
-                if hasattr(best_moxing_model, 'feature_importances_'):
-                    np.savetxt("./DataStatistics/GBDT/GBDT_coefficient.csv",
-                               best_moxing_model.feature_importances_, delimiter=',')
-                    coef1 = pd.read_csv(r"./DataStatistics/GBDT/GBDT_coefficient.csv", header=None)
-                    coef1_array = np.array(coef1.stack())
-                    coef1_list = coef1_array.tolist()
-                    df1 = pd.DataFrame(coef1_list)
-                    feature2 = list(X_train.columns)
-                    df2 = pd.DataFrame(feature2)
-                    df2.to_csv("./DataStatistics/GBDT/GBDT_coefficient.csv", index=False)
-                    hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                    hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                    quanzhognhuizhi(hebingQUANZHONG, modelfusionall_words)
-                    with pd.ExcelWriter("./DataStatistics/GBDT/GBDT" + "_" + mingshishenme + "_Report.xlsx",engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="GBDT" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="GBDT_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="GBDT_test" + "_" + mingshishenme)
-                        hebingQUANZHONG.to_excel(writer, index=True, sheet_name="GBDT_coefficient" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="GBDT_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="GBDT_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="GBDT_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="GBDT_ROCtest" + "_" + mingshishenme + "_report_2")
-                    try:
-                        os.remove("./DataStatistics/GBDT/GBDT_coefficient.csv")
-                    except:
-                        print("no")
-                else:
-                    st.warning("The best models have no weight attributes!")
-                    with pd.ExcelWriter("./DataStatistics/GBDT/GBDT" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="GBDT" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="GBDT_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="GBDT_test" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="GBDT_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="GBDT_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="GBDT_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="GBDT_ROCtest" + "_" + mingshishenme + "_report_2")
-            else:
-                with pd.ExcelWriter("./DataStatistics/GBDT/GBDT" + "_" + mingshishenme + "_Report.xlsx",
-                                    engine='xlsxwriter') as writer:
-                    hebingcccc.to_excel(writer, index=False, sheet_name="GBDT" + "_" + mingshishenme)
-                    moxing_train.to_excel(writer, index=False, sheet_name="GBDT_train" + "_" + mingshishenme)
-                    moxing_test.to_excel(writer, index=False, sheet_name="GBDT_test" + "_" + mingshishenme)
-                    dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                     sheet_name="GBDT_ROCtrain" + "_" + mingshishenme + "_report_1")
-                    dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                    sheet_name="GBDT_ROCtest" + "_" + mingshishenme + "_report_1")
-                    dfroctrain.to_excel(writer, index=True,
-                                        sheet_name="GBDT_ROCtrain" + "_" + mingshishenme + "_report_2")
-                    dfroctest.to_excel(writer, index=True,
-                                       sheet_name="GBDT_ROCtest" + "_" + mingshishenme + "_report_2")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -1397,10 +959,6 @@ def moxinggoujianerfenlei(test_size,train_size):
                 best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                joblib.dump(best_model,
-                            './DataStatistics/' + modelfusionall_words + '/' + modelfusionall_words + '.pkl')
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
             else:
                 best_model = CatBoostClassifier(**shenmebestmodel,random_state=moxingderandomstate)
                 best_model.fit(X_train, y_train)
@@ -1419,58 +977,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctrain = pd.DataFrame(reporttrain).transpose()
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test, moxing_train])
-            if mingshishenme != "test":
-                if hasattr(best_moxing_model, 'feature_importances_'):
-                    np.savetxt("./DataStatistics/CatBoost/CAB_coefficient.csv",
-                               best_moxing_model.feature_importances_, delimiter=',')
-                    coef1 = pd.read_csv(r"./DataStatistics/CatBoost/CAB_coefficient.csv", header=None)
-                    coef1_array = np.array(coef1.stack())
-                    coef1_list = coef1_array.tolist()
-                    df1 = pd.DataFrame(coef1_list)
-                    feature2 = list(X_train.columns)
-                    df2 = pd.DataFrame(feature2)
-                    df2.to_csv("./DataStatistics/CatBoost/CAB_coefficient.csv", index=False)
-                    hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                    hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                    quanzhognhuizhi(hebingQUANZHONG, modelfusionall_words)
-                    with pd.ExcelWriter("./DataStatistics/CatBoost/CAB" + "_" + mingshishenme + "_Report.xlsx",engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="CAB" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="CAB_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="CAB_test" + "_" + mingshishenme)
-                        hebingQUANZHONG.to_excel(writer, index=True, sheet_name="CAB_coefficient" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="CAB_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="CAB_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="CAB_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="CAB_ROCtest" + "_" + mingshishenme + "_report_2")
-                    try:
-                        os.remove("./DataStatistics/CatBoost/CAB_coefficient.csv")
-                    except:
-                        print("no")
-                else:
-                    st.warning("The best models have no weight attributes!")
-                    with pd.ExcelWriter("./DataStatistics/CatBoost/CAB" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="CAB" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="CAB_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="CAB_test" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="CAB_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="CAB_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="CAB_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="CAB_ROCtest" + "_" + mingshishenme + "_report_2")
-            else:
-                with pd.ExcelWriter("./DataStatistics/CatBoost/CAB" + "_" + mingshishenme + "_Report.xlsx",
-                                    engine='xlsxwriter') as writer:
-                    hebingcccc.to_excel(writer, index=False, sheet_name="CAB" + "_" + mingshishenme)
-                    moxing_train.to_excel(writer, index=False, sheet_name="CAB_train" + "_" + mingshishenme)
-                    moxing_test.to_excel(writer, index=False, sheet_name="CAB_test" + "_" + mingshishenme)
-                    dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                     sheet_name="CAB_ROCtrain" + "_" + mingshishenme + "_report_1")
-                    dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                    sheet_name="CAB_ROCtest" + "_" + mingshishenme + "_report_1")
-                    dfroctrain.to_excel(writer, index=True,
-                                        sheet_name="CAB_ROCtrain" + "_" + mingshishenme + "_report_2")
-                    dfroctest.to_excel(writer, index=True,
-                                       sheet_name="CAB_ROCtest" + "_" + mingshishenme + "_report_2")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -1497,10 +1003,6 @@ def moxinggoujianerfenlei(test_size,train_size):
                 best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                joblib.dump(best_model,
-                            './DataStatistics/' + modelfusionall_words + '/' + modelfusionall_words + '.pkl')
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
             else:
                 best_model = LGBMClassifier(**shenmebestmodel,random_state=moxingderandomstate)
                 best_model.fit(X_train, y_train)
@@ -1519,59 +1021,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctrain = pd.DataFrame(reporttrain).transpose()
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test, moxing_train])
-            if mingshishenme != "test":
-                if hasattr(best_moxing_model, 'feature_importances_'):
-                    np.savetxt("./DataStatistics/LightGBM/LGB_coefficient.csv",
-                               best_moxing_model.feature_importances_, delimiter=',')
-                    coef1 = pd.read_csv(r"./DataStatistics/LightGBM/LGB_coefficient.csv", header=None)
-                    coef1_array = np.array(coef1.stack())
-                    coef1_list = coef1_array.tolist()
-                    df1 = pd.DataFrame(coef1_list)
-                    feature2 = list(X_train.columns)
-                    df2 = pd.DataFrame(feature2)
-                    df2.to_csv("./DataStatistics/LightGBM/LGB_coefficient.csv", index=False)
-                    hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                    hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                    quanzhognhuizhi(hebingQUANZHONG, modelfusionall_words)
-                    with pd.ExcelWriter("./DataStatistics/LightGBM/LGB" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="LGB" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="LGB_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="LGB_test" + "_" + mingshishenme)
-                        hebingQUANZHONG.to_excel(writer, index=True, sheet_name="LGB_coefficient" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="LGB_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="LGB_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="LGB_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="LGB_ROCtest" + "_" + mingshishenme + "_report_2")
-                    try:
-                        os.remove("./DataStatistics/LightGBM/LGB_coefficient.csv")
-                    except:
-                        print("no")
-                else:
-                    st.warning("The best models have no weight attributes!")
-                    with pd.ExcelWriter("./DataStatistics/LightGBM/LGB" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="LGB")
-                        moxing_train.to_excel(writer, index=False, sheet_name="LGB_train")
-                        moxing_test.to_excel(writer, index=False, sheet_name="LGB_test")
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="LGB_ROCtrain" + "_" + mingshishenme + "report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True, sheet_name="LGB_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True, sheet_name="LGB_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True, sheet_name="LGB_ROCtest" + "_" + mingshishenme + "_report_2")
-            else:
-                with pd.ExcelWriter("./DataStatistics/LightGBM/LGB" + "_" + mingshishenme + "_Report.xlsx",
-                                    engine='xlsxwriter') as writer:
-                    hebingcccc.to_excel(writer, index=False, sheet_name="LGB")
-                    moxing_train.to_excel(writer, index=False, sheet_name="LGB_train")
-                    moxing_test.to_excel(writer, index=False, sheet_name="LGB_test")
-                    dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                     sheet_name="LGB_ROCtrain" + "_" + mingshishenme + "report_1")
-                    dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                    sheet_name="LGB_ROCtest" + "_" + mingshishenme + "_report_1")
-                    dfroctrain.to_excel(writer, index=True,
-                                        sheet_name="LGB_ROCtrain" + "_" + mingshishenme + "_report_2")
-                    dfroctest.to_excel(writer, index=True,
-                                       sheet_name="LGB_ROCtest" + "_" + mingshishenme + "_report_2")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
@@ -1598,10 +1047,6 @@ def moxinggoujianerfenlei(test_size,train_size):
                 best_moxing_model = best_model.best_estimator_
                 best_params = best_model.best_params_
                 st.markdown(f"The optimal parameters of the model are:{best_params}")
-                joblib.dump(best_model,
-                            './DataStatistics/' + modelfusionall_words + '/' + modelfusionall_words + '.pkl')
-                with open('./DataStatistics/' + modelfusionall_words + '/' +  modelfusionall_words +'_best_params.txt', "w") as best_paramsb:
-                    best_paramsb.write("The optimal parameters of the model are:\n" + str(best_params))
             else:
                 best_model = GaussianNB(**shenmebestmodel)
                 best_model.fit(X_train, y_train)
@@ -1620,67 +1065,6 @@ def moxinggoujianerfenlei(test_size,train_size):
             dfroctrain = pd.DataFrame(reporttrain).transpose()
             dfroctest = pd.DataFrame(reporttest).transpose()
             hebingcccc = pd.concat([moxing_test,moxing_train])
-            if mingshishenme != "test":
-                if hasattr(best_moxing_model, 'coef_'):
-                    np.savetxt("./DataStatistics/Bayes/Bayes_coefficient.csv", best_moxing_model.coef_, delimiter=',')
-                    coef1 = pd.read_csv(r"./DataStatistics/Bayes/Bayes_coefficient.csv", header=None)
-                    coef1_array = np.array(coef1.stack())
-                    coef1_list = coef1_array.tolist()
-                    df1 = pd.DataFrame(coef1_list)
-                    feature2 = list(X_train.columns)
-                    df2 = pd.DataFrame(feature2)
-                    df2.to_csv("./DataStatistics/Bayes/Bayes_coefficient.csv", index=False)
-                    hebingQUANZHONG = pd.concat([df2, df1], axis=1)
-                    hebingQUANZHONG.columns = ['Features', 'Coefficients']
-                    quanzhognhuizhi(hebingQUANZHONG, modelfusionall_words)
-                    with pd.ExcelWriter("./DataStatistics/Bayes/Bayes" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="Bayes" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="Bayes_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="Bayes_test" + "_" + mingshishenme)
-                        hebingQUANZHONG.to_excel(writer, index=True,
-                                                 sheet_name="Bayes_coefficient" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                         sheet_name="Bayes_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                        sheet_name="Bayes_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True,
-                                            sheet_name="Bayes_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True,
-                                           sheet_name="Bayes_ROCtest" + "_" + mingshishenme + "_report_2")
-                    try:
-                        os.remove("./DataStatistics/Bayes/Bayes_coefficient.csv")
-                    except:
-                        print("no")
-                else:
-                    st.warning("The best models have no weight attributes!")
-                    with pd.ExcelWriter("./DataStatistics/Bayes/Bayes" + "_" + mingshishenme + "_Report.xlsx",
-                                        engine='xlsxwriter') as writer:
-                        hebingcccc.to_excel(writer, index=False, sheet_name="Bayes" + "_" + mingshishenme)
-                        moxing_train.to_excel(writer, index=False, sheet_name="Bayes_train" + "_" + mingshishenme)
-                        moxing_test.to_excel(writer, index=False, sheet_name="Bayes_test" + "_" + mingshishenme)
-                        dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                         sheet_name="Bayes_ROCtrain" + "_" + mingshishenme + "_report_1")
-                        dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                        sheet_name="Bayes_ROCtest" + "_" + mingshishenme + "_report_1")
-                        dfroctrain.to_excel(writer, index=True,
-                                            sheet_name="Bayes_ROCtrain" + "_" + mingshishenme + "_report_2")
-                        dfroctest.to_excel(writer, index=True,
-                                           sheet_name="Bayes_ROCtest" + "_" + mingshishenme + "_report_2")
-            else:
-                with pd.ExcelWriter("./DataStatistics/Bayes/Bayes" + "_" + mingshishenme + "_Report.xlsx",
-                                    engine='xlsxwriter') as writer:
-                    hebingcccc.to_excel(writer, index=False, sheet_name="Bayes" + "_" + mingshishenme)
-                    moxing_train.to_excel(writer, index=False, sheet_name="Bayes_train" + "_" + mingshishenme)
-                    moxing_test.to_excel(writer, index=False, sheet_name="Bayes_test" + "_" + mingshishenme)
-                    dataTRAINPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                     sheet_name="Bayes_ROCtrain" + "_" + mingshishenme + "_report_1")
-                    dataTESTPONGJIAZHIBIAO.to_excel(writer, index=True,
-                                                    sheet_name="Bayes_ROCtest" + "_" + mingshishenme + "_report_1")
-                    dfroctrain.to_excel(writer, index=True,
-                                        sheet_name="Bayes_ROCtrain" + "_" + mingshishenme + "_report_2")
-                    dfroctest.to_excel(writer, index=True,
-                                       sheet_name="Bayes_ROCtest" + "_" + mingshishenme + "_report_2")
             return best_params
         st.markdown("---")
         XUNLIANYANZHENGDEYANZHENGMINGtrain = "train"
